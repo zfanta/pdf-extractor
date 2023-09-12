@@ -2,16 +2,31 @@
   "name": "pdf-extractor",
   "version": "1.0.0",
   "description": "",
+  "main": ".ts-node/index.mjs",
+  "bin": {
+    "app": "./dist/bundle.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node index.mts"
+    "start": "ts-node index.ts",
+    "pkg": "tsc && rollup dist/index.js --format cjs --file dist/bundle.js && pkg dist/bundle.js --out-path dist/bin"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "@tsconfig/node18": "^18.2.1",
     "@types/node": "^20.6.0",
-    "ts-node": "^10.9.1"
+    "pkg": "^5.8.1",
+    "rollup": "^3.29.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "pkg": {
+    "targets": [
+      "node18-linux-x64",
+      "node18-macos-x64",
+      "node18-win-x64"
+    ]
   }
 }

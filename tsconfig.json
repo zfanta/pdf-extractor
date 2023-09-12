@@ -4,6 +4,9 @@
     "esm": true,
   },
   "compilerOptions": {
-    "target": "ES2017"
-  }
+    "outDir": "dist"
+  },
+  "include": [
+    "index.ts"
+  ],
 }

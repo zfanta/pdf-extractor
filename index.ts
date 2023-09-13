@@ -1,16 +1,30 @@
 import fs from 'fs/promises'
 import { spawn } from 'child_process'
+import { Option, Command, Argument } from 'commander'
+import { resolve } from 'path'
 
-const filePath = './chrome.DMP'
-const qpdfHome = 'C:\\Program Files\\qpdf 11.6.1'
+const program = new Command()
+  .addArgument(new Argument('file', 'Path to PDF file'))
+  .addOption(new Option('-q, --qpdf [path]', 'Path to qpdf binary').default('qpdf'))
+  .addOption(new Option('-t, --temp [path]', 'Path to temporary directory').default('./temp'))
+  .addOption(new Option('-r, --result [path]', 'Path to result directory').default('./result'))
+  .parse()
+
+const options = program.opts() as {
+  qpdf: string
+  temp: string
+  result: string
+}
+
+const filePath = program.args[0]
 
 async function recover (filename: string) {
   console.log(`Recovering ${filename}`)
 
-  const env = process.env
-  env.PATH = `${env.PATH};${qpdfHome}/bin`
+  const tempFilePath = resolve(options.temp, `${filename}.pdf`)
+  const resultFilePath = resolve(options.result, `${filename}.pdf`)
 
-  const qpdf = spawn('qpdf', ['--linearize', '--remove-unreferenced-resources=yes', `./temp/${filename}.pdf`, `./result/${filename}.pdf`], { env })
+  const qpdf = spawn(options.qpdf, ['--linearize', '--remove-unreferenced-resources=yes', tempFilePath, resultFilePath])
   return await new Promise<void>((resolve, reject) => {
     qpdf.on('close', (code) => {
       // https://qpdf.readthedocs.io/en/stable/cli.html#exit-status
@@ -72,21 +86,21 @@ async function main () {
   }).flat()
 
   // Write temporary PDFs to disk
-  await fs.mkdir('./temp', { recursive: true })
+  await fs.mkdir(options.temp, { recursive: true })
   await Promise.all(pdfsBeforeEOF.map((pdf, index) => {
-    return fs.writeFile(`./temp/${index}.pdf`, pdf)
+    const tempFilePath = resolve(options.temp, `${index}.pdf`)
+    return fs.writeFile(tempFilePath, pdf)
   }))
 
-
-  await fs.mkdir('./result', { recursive: true })
+  await fs.mkdir(options.result, { recursive: true })
 
   // Recover PDFs
-  await Promise.allSettled(pdfsBeforeEOF.map((pdf, index) => {
+  await Promise.allSettled(pdfsBeforeEOF.map((_, index) => {
     return recover(`${index}`)
   }))
 
   // Remove temporary PDFs
-  await fs.rm('./temp', { recursive: true })
+  await fs.rm(options.temp, { recursive: true })
 }
 
 main().catch(console.error)

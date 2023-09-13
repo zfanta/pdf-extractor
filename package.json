@@ -3,13 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": ".ts-node/index.mjs",
-  "bin": {
-    "app": "./dist/bundle.js"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node index.ts",
-    "pkg": "tsc && rollup dist/index.js --format cjs --file dist/bundle.js && pkg dist/bundle.js --out-path dist/bin"
+    "start": "node -r ts-node/register index.ts -q \"C:\\Program Files\\qpdf 11.6.1\\bin\\qpdf.exe\" chrome.DMP -t t -r r",
+    "pkg": "tsc && rollup dist/index.js --format cjs --file dist/bundle.js && pkg -o dist/bin/pdf-extractor -t node18-linux-x64,node18-macos-x64,node18-win-x64 dist/bundle.js"
   },
   "keywords": [],
   "author": "",
@@ -22,11 +19,7 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
-  "pkg": {
-    "targets": [
-      "node18-linux-x64",
-      "node18-macos-x64",
-      "node18-win-x64"
-    ]
+  "dependencies": {
+    "commander": "^11.0.0"
   }
 }
